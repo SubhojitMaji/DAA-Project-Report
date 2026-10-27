@@ -1,5 +1,3 @@
-# Minimum Distance-2 Dominating Set on a Tree
-
 **DAA Project | Question 5**
 
 **Authors:** Sayan Bhadra (bmat2429) and Subhojit Maji (bmat2434)
