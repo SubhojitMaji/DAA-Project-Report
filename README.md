@@ -1,52 +1,154 @@
 # Minimum Distance-2 Dominating Set on a Tree
 
-**DAA Project · Question 5**  
-**Authors:** Sayan Bhadra (`bmat2419`) and Subhojit Maji (`bmat2434`)  
+**DAA Project · Question 5**
+
+**Authors:** Sayan Bhadra (`bmat2419`) and Subhojit Maji (`bmat2434`)
+
 **Date:** 27 October 2026
 
-This project implements a greedy algorithm for finding a **minimum distance-2 dominating set** in a tree. The model can represent a supervisory or coordination network: each vertex is a person, each edge is a direct reporting relationship, and a selected vertex can cover everyone at graph distance at most two.
+This project studies the problem of finding a **minimum distance-2 dominating set in a tree** using a bottom-up greedy algorithm. The problem can be interpreted as selecting a minimum-sized supervisory or coordination team such that every member of an organization is within two reporting links of at least one selected coordinator.
 
-Repository: [SubhojitMaji/DAA-Project-Report](https://github.com/SubhojitMaji/DAA-Project-Report)
+**Repository:** [SubhojitMaji/DAA-Project-Report](https://github.com/SubhojitMaji/DAA-Project-Report)
 
-## Problem statement
+---
 
-Let \(T=(V,E)\) be a tree with \(n=|V|\) vertices and a designated root \(r\). For vertices \(u,v\in V\), let \(\operatorname{dist}_T(u,v)\) be the number of edges on their unique path.
+## 1. Problem Statement
 
-Find a set \(S\subseteq V\) of minimum cardinality such that every vertex is within distance two of at least one selected vertex:
+Let $T=(V,E)$ be a rooted tree with $n=|V|$ vertices and a designated root $r$.
 
-\[
-\min |S| \qquad\text{subject to}\qquad
-\forall u\in V,\ \exists v\in S:\operatorname{dist}_T(u,v)\leq 2.
-\]
+For any two vertices $u,v\in V$, let $\operatorname{dist}_T(u,v)$ denote the number of edges on the unique path connecting them.
 
-Such a set is called a **distance-2 dominating set**. The goal is to minimize the number of selected vertices, not merely to find any feasible set.
+We seek a subset $S\subseteq V$ of minimum cardinality such that every vertex lies within distance two of at least one vertex in $S$.
 
-## Algorithm
+Formally, the optimization problem is
 
-The solution uses a bottom-up greedy strategy.
+$$
+\min |S|
+$$
 
-1. Run breadth-first search (BFS) from the root to compute each vertex's depth and parent.
-2. Process vertices in descending order of depth, so deeper vertices are considered first.
-3. When an uncovered vertex \(u\) is encountered, select its grandparent if one exists. If not, select its parent if one exists; otherwise select \(u\) itself.
-4. Mark every vertex at distance at most two from the selected vertex as covered.
-5. Return the selected vertices and their count.
+subject to
 
-The key idea is to handle the deepest uncovered vertices first. An exchange argument shows why choosing the highest ancestor available within two edges is an optimal greedy choice: it covers the current vertex while also reaching vertices nearer the root. The selected vertices are kept far enough apart that the distance-2 marking work has linear total cost.
+$$
+\forall u\in V,\quad
+\exists v\in S
+\text{ such that }
+\operatorname{dist}_T(u,v)\leq 2.
+$$
 
-## Complexity
+Such a set is called a **distance-2 dominating set**.
 
-For a tree represented by adjacency lists, the algorithm uses:
+The objective is to minimize the number of selected vertices while ensuring that every vertex in the tree is covered.
 
-- **Time:** \(O(n)\)
-- **Auxiliary space:** \(O(n)\)
+## 2. Greedy Algorithm
 
-BFS computes the parent/depth information in linear time. Because vertex depths lie between \(0\) and \(n-1\), reversing BFS order gives a deepest-first order in linear time without comparison sorting. The marking procedure explores only distance-2 neighborhoods; across the full greedy run, this work is linear in the size of the tree.
+The algorithm follows a bottom-up greedy strategy.
 
-## Implementation
+The central idea is to process the deepest uncovered vertices first and select an ancestor that can cover the current vertex while also covering other vertices nearby.
 
-The implementation uses only Python's standard library, specifically `collections.deque` for BFS.
+### Algorithm Overview
 
-The main function has the following interface:
+1. Perform a breadth-first search (BFS) from the root to compute the depth and parent of every vertex.
+2. Reverse the BFS traversal order to obtain a deepest-first processing order.
+3. Process each vertex $u$ in this order.
+4. If $u$ is already covered, skip it.
+5. Otherwise, select its grandparent if one exists, its parent if only the parent exists, or $u$ itself if neither exists.
+6. Mark every vertex at distance at most two from the selected vertex as covered.
+7. Return the selected vertices and their count.
+
+The set of selected vertices is the output of the algorithm.
+
+### Pseudocode
+
+```text
+MIN-DISTANCE-2-DOMINATING-SET(T, r)
+
+    Compute parent[u] and depth[u] using BFS from r
+    L = reverse(BFS traversal order)
+
+    S = empty set
+    covered[u] = False for every vertex u
+
+    for each vertex u in L:
+
+        if covered[u] == False:
+
+            v = u
+
+            if parent[v] exists:
+                v = parent[v]
+
+                if parent[v] exists:
+                    v = parent[v]
+
+            Add v to S
+
+            Mark every vertex w with dist_T(v, w) <= 2
+            as covered
+
+    return S
+```
+
+## 3. Correctness
+
+The algorithm processes vertices in descending order of depth. Consequently, when an uncovered vertex is considered, all vertices deeper in the tree have already been processed.
+
+For an uncovered vertex $u$, every valid distance-2 dominating set must contain some vertex within distance two of $u$.
+
+The greedy strategy selects the highest ancestor of $u$ available within two edges. This choice covers $u$ and may additionally cover vertices closer to the root.
+
+An exchange argument can be used to establish optimality: an appropriate solution containing a vertex that covers $u$ can be transformed to contain the greedy choice without increasing the cardinality of the dominating set or leaving any vertex uncovered.
+
+Applying this argument successively to the greedy selections establishes that the resulting distance-2 dominating set has minimum cardinality.
+
+## 4. Complexity Analysis
+
+Let $n=|V|$. Since $T$ is a tree,
+
+$$
+|E|=n-1.
+$$
+
+### Time Complexity
+
+**BFS:** Computing the parent pointers and depths requires
+
+$$
+O(|V|+|E|)=O(n).
+$$
+
+**Ordering:** Reversing the BFS traversal order takes $O(n)$ time and produces an order with non-increasing depths.
+
+**Greedy selection:** Each vertex is considered once. When a vertex is selected, its distance-2 neighborhood is explored and marked as covered. The total neighborhood-exploration cost is $O(n)$ for a tree because the selected vertices are pairwise at distance greater than two, so their immediate neighborhoods do not overlap.
+
+Therefore, the overall running time is
+
+$$
+\boxed{T(n)=O(n)}.
+$$
+
+### Space Complexity
+
+The algorithm stores:
+
+- An adjacency list representing the tree.
+- Parent and depth arrays.
+- A coverage array.
+- The BFS traversal order.
+- The set of selected vertices.
+
+Each requires at most $O(n)$ space.
+
+Hence, the total space complexity is
+
+$$
+\boxed{S(n)=O(n)}.
+$$
+
+## 5. Python Implementation
+
+The implementation uses only Python's standard library, including `collections.deque` for BFS.
+
+### Function Signature
 
 ```python
 min_distance_2_dominating_set(n, edges, root=0)
@@ -54,41 +156,77 @@ min_distance_2_dominating_set(n, edges, root=0)
 
 **Parameters**
 
-- `n`: number of vertices, labelled `0` through `n - 1`.
-- `edges`: an iterable of `(u, v)` pairs, one for each tree edge.
-- `root`: the root vertex, defaulting to `0`.
+- `n`: Number of vertices, labelled from `0` to `n - 1`.
+- `edges`: A collection of `(u, v)` pairs representing the tree edges.
+- `root`: The root vertex, defaulting to `0`.
 
 **Returns**
 
-A pair `(size, vertices)`, where `size` is the number of selected vertices and `vertices` is the sorted list of selected vertex labels.
+A pair `(size, vertices)`, where:
 
-The function assumes that the input is a valid tree, that vertex labels are in range, and that `root` is a valid vertex when `n > 0`. The empty-tree case returns `(0, [])`.
+- `size` is the number of selected vertices.
+- `vertices` is the sorted list of selected vertex labels.
 
-## Running the example
+The implementation assumes a valid tree with vertex labels in the prescribed range. For an empty tree, it returns `(0, [])`.
 
-Save the Python implementation in `main.py` (or use the filename in your checkout), then run:
+### Running the Program
+
+Save the Python implementation in `main.py` and execute:
 
 ```bash
 python main.py
 ```
 
-The example tree in the implementation has seven vertices and edges
+### Example
 
-```text
-(0, 1), (0, 2), (1, 3), (1, 4), (2, 5), (2, 6)
+Consider the tree with seven vertices
+
+$$
+V=\{0,1,2,3,4,5,6\}
+$$
+
+and edges
+
+```python
+edges = [
+    (0, 1),
+    (0, 2),
+    (1, 3),
+    (1, 4),
+    (2, 5),
+    (2, 6)
+]
 ```
 
-Its root, vertex `0`, is within distance two of every vertex. The expected output is therefore:
+Taking vertex `0` as the root, every vertex is within distance two of vertex `0`.
+
+Thus, the minimum distance-2 dominating set contains just one vertex.
+
+**Expected output:**
 
 ```text
 Minimum Team Size: 1
 Selected Team Members: [0]
 ```
 
-## Correctness outline
+## 6. Applications
 
-The algorithm processes vertices from greatest depth to least depth. When it reaches an uncovered vertex \(u\), all deeper vertices have already been covered. Every valid distance-2 dominating set must include some vertex within distance two of \(u\). By replacing an appropriate such choice with the highest ancestor of \(u\) available within two edges, an optimal solution can be transformed to include the greedy choice without increasing the number of selected vertices or leaving any still-uncovered vertex undominated. Applying this exchange step at each selection shows that the greedy choices can be part of an optimal solution. Since the algorithm eventually covers every vertex, the returned set is a minimum distance-2 dominating set.
+The distance-2 domination problem has potential applications in:
 
-## Project report
+- **Organizational networks:** Selecting a minimum number of coordinators so that every employee is within two reporting links of a coordinator.
+- **Communication networks:** Placing monitoring or coordination nodes in tree-structured networks.
+- **Hierarchical systems:** Identifying a small set of representatives that provides coverage across a hierarchy.
 
-The accompanying report develops the tree model, greedy strategy, pseudocode, correctness argument, complexity analysis, and Python implementation.
+## 7. Conclusion
+
+This project investigates a greedy algorithm for finding a minimum distance-2 dominating set in a rooted tree.
+
+The algorithm combines BFS-based preprocessing, deepest-first vertex processing, and local neighborhood marking. Its intended running time and space requirements are both linear in the number of vertices.
+
+The project connects a classical graph optimization problem with algorithm design techniques, including greedy selection, exchange arguments, and asymptotic complexity analysis.
+
+---
+
+**Project:** Design and Analysis of Algorithms (DAA)  
+**Question:** 5  
+**Repository:** [DAA-Project-Report](https://github.com/SubhojitMaji/DAA-Project-Report)
