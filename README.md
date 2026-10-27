@@ -2,7 +2,7 @@
 
 **DAA Project | Question 5**
 
-**Authors:** Sayan Bhadra (bmat2419) and Subhojit Maji (bmat2434)
+**Authors:** Sayan Bhadra (bmat2429) and Subhojit Maji (bmat2434)
 
 This project explores a greedy algorithm for finding a minimum distance-2 dominating set in a rooted tree. The goal is to select the smallest set of vertices such that every vertex is within distance two of at least one selected vertex.
 
